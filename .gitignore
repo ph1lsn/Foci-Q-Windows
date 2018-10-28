@@ -1,0 +1,9 @@
+/*
+!.gitignore
+!README.md
+!foci.cfg
+!macros
+macros/*
+!macros/foci.ijm
+!icon.ico
+!FociQ.exe
