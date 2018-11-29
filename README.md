@@ -4,6 +4,12 @@ FociQ is a python written application to quantify nuclear foci in cells. This is
 
 # Changelog
 
+## 1.1.0 29-11-2018
+* Version 1.0 includes quantification in channels green and/or red. Parameters can be set for individual channels.
+* Small GUI changes.
+* Added timer to inform the user how long calculations take.
+* Output file now has a sheet for each channel and includes the maximum number of foci.
+
 ## 0.1.2 14-11-2018
 * Improved stability: FociQ should no longer start processing if ij.jar is not found and will report in the log.
 * Additions in user guide.

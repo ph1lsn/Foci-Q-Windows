@@ -1,9 +1,12 @@
 file = File.openAsString("foci.cfg");
 params = split(file, "\n");
-print(params[1])
-radius = substring(params[1], 11)
-noise = substring(params[0], 6)
-dir = substring(params[2], 5)
+radius_g = substring(params[1], 13)
+noise_g = substring(params[0], 8)
+radius_r = substring(params[3], 13)
+noise_r = substring(params[2], 8)
+dir = substring(params[4], 5)
+green = substring(params[5], 6)
+red = substring(params[6], 4)
 start = getTime();
 count = 0;
 countFiles(dir);
@@ -23,7 +26,6 @@ function countFiles(dir) {
 }
 
 function processFiles(dir) {
-    //print("test1");
    list = getFileList(dir);
    for (i=0; i<list.length; i++) {
        if (endsWith(list[i], "/")){
@@ -37,7 +39,6 @@ function processFiles(dir) {
        }
        else {
 		splitDir=dir + "Results/"; 
-		print(splitDir);
 		File.makeDirectory(splitDir); 
           showProgress(n++, count);
           path = dir+list[i];
@@ -57,37 +58,61 @@ function processFile(path) {
         run("16-bit");
         run("Smooth");
         setAutoThreshold("Li dark");
-        run("Analyze Particles...", "size=500-Infinity exclude clear summarize add");
 
-        selectWindow(imgName+" (green)");
-        run("Subtract Background...", radius);
-        run("Find Maxima...", "noise=" + noise +" output=[Single Points]");
-        roiManager("Show None");
-        roiManager("Show All");
-        roiManager("Measure");
-        selectWindow(imgName+" (green)" + " Maxima");
-        //Save ROIs
-        saveAs("Tiff", splitDir + imgName + "-ROI.tiff");
+        if(green == 1){
+            run("Analyze Particles...", "size=700-Infinity exclude clear summarize add");
 
-        //Foci berechnen
-        for(j = 0; j < Table.size; j++) {
-            rInt = Table.get("RawIntDen", j);
-            foci = rInt/255;
-            setResult("Foci", j, foci);
+            //Green Channel
+            selectWindow(imgName+" (green)");
+            run("Subtract Background...", radius_g);
+            run("Find Maxima...", "noise=" + noise_g +" output=[Single Points]");
+            roiManager("Show None");
+            roiManager("Show All");
+            roiManager("Measure");
+            selectWindow(imgName+" (green)" + " Maxima");
+            //Save ROIs
+            saveAs("Tiff", splitDir + imgName + "Green-ROI.tiff");
+    
+            //Foci berechnen
+            for(j = 0; j < Table.size; j++) {
+                rInt = Table.get("RawIntDen", j);
+                foci = rInt/255;
+                setResult("FociGreen", j, foci);
+            }
+            saveAs("Results", splitDir + imgName + "-G.csv");
+    
         }
-        //Save results
-        saveAs("Results", splitDir + imgName + ".csv");
+       
+        if(red == 1){
+            //Red Channel
+            run("Clear Results");
+            selectWindow(imgName+" (blue)"); //DAPI
+            run("Analyze Particles...", "size=700-Infinity exclude clear summarize add");
+            selectWindow(imgName+" (red)");
+            run("Subtract Background...", radius_r);
+            run("Find Maxima...", "noise=" + noise_r +" output=[Single Points]");
+            roiManager("Show None");
+            roiManager("Show All");
+            roiManager("Measure");
+            selectWindow(imgName+" (red)" + " Maxima");
+            //Save ROIs
+            saveAs("Tiff", splitDir + imgName + "Red-ROI.tiff");
+
+            //Foci berechnen
+            for(j = 0; j < Table.size; j++) {
+                rInt = Table.get("RawIntDen", j);
+                foci = rInt/255;
+                setResult("FociRed", j, foci);
+            }
+            //Save results
+            saveAs("Results", splitDir + imgName + "-R.csv");
+        }
+        
         run("Close All");
         
         } 
 }
 
-exec_time = (getTime()-start)/1000;
-
 run("Quit");
-/*
-Dialog.create("Finished");
-Dialog.addMessage("Finished after: "+ exec_time + "s. Check Results folder");
-Dialog.show();
-*/
+
 
